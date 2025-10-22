@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkUp Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ADDED: LinkUp Theme Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        /* ADDED/UPDATED: Body Background with Gradient Animation */
+        body {
+            font-family: 'Poppins', sans-serif;
+            /* bg-gray-50 ko remove kar ke LinkUp ka gradient shamil kiya */
+            background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%); 
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            color: #333; /* Default text color */
+        }
+        
+        /* Background Animation Definition */
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Custom Hover Effect for Cards (LinkUp Style) */
+        .card { 
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; 
+            z-index: 1; /* Card ko background se upar rakha */
+        }
+        .card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.25); /* Shadow ko Darker kiya */
+        }
+        .hidden { display: none; }
+        
+        /* Scroll Animation (No change needed, it's good) */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                        transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .animate-on-scroll.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    
+    <header class="bg-indigo-900 shadow-xl sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-3xl font-extrabold text-white tracking-widest uppercase">LinkUp Store</h1>
+            <nav class="flex items-center space-x-6">
+                <button id="products-btn" class="text-white hover:text-indigo-200 font-medium transition duration-150">PRODUCTS</button>
+                <button id="orders-btn" class="text-white hover:text-indigo-200 font-medium transition duration-150 hidden">MY ORDERS</button>
+                
+                <button id="cart-btn" class="text-white hover:text-indigo-200 relative flex items-center p-1 rounded-md transition duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span id="cart-count" class="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center -mt-3 -ml-1">0</span>
+                </button>
+                
+                <button id="auth-btn" class="bg-indigo-400 hover:bg-indigo-500 text-white font-semibold py-1.5 px-5 rounded-full text-sm transition duration-150 shadow-md">LOGIN</button>
+                
+                <span id="welcome-message" class="text-indigo-200 hidden text-sm">Welcome, <span id="username-display" class="font-bold"></span>!</span>
+                <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-1.5 px-5 rounded-full text-sm hidden transition duration-150 shadow-md">LOGOUT</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="auth-section" class="max-w-lg mx-auto bg-indigo-50 p-10 rounded-2xl shadow-2xl border border-indigo-200 mb-12 hidden">
+            <h2 class="text-3xl font-extrabold mb-8 text-indigo-700 text-center border-b-2 border-indigo-500 pb-3" id="auth-title">USER LOGIN</h2>
+            <form id="auth-form">
+                <div class="mb-4 hidden" id="username-group">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2">Username</label>
+                    <input type="text" id="auth-username" class="shadow-sm border border-gray-300 rounded w-full py-3 px-4 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" placeholder="Your username">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2">Email</label>
+                    <input type="email" id="auth-email" class="shadow-sm border border-gray-300 rounded w-full py-3 px-4 text-gray-800 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" required placeholder="your@email.com">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-semibold mb-2">Password</label>
+                    <input type="password" id="auth-password" class="shadow-sm border border-gray-300 rounded w-full py-3 px-4 text-gray-800 mb-3 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150" required placeholder="••••••••">
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="submit" id="auth-submit-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-full focus:outline-none focus:shadow-outline transition duration-150 w-1/2 shadow-xl">Login</button>
+                    <button type="button" id="toggle-auth-btn" class="inline-block align-baseline font-semibold text-sm text-indigo-500 hover:text-indigo-800 transition duration-150">Need an account? Register</button>
+                </div>
+                <p id="auth-message" class="text-red-600 text-sm mt-4 font-medium text-center"></p>
+            </form>
+        </section>
+
+        <section id="products-section">
+            <h2 class="text-4xl font-extrabold text-white mb-10 border-b-4 border-indigo-500 inline-block pb-1">FEATURED PRODUCTS</h2>
+            <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            </div>
+        </section>
+        
+        <section id="cart-section" class="hidden">
+            <h2 class="text-4xl font-extrabold text-white mb-10 border-b-4 border-indigo-500 inline-block pb-1">YOUR SHOPPING CART</h2>
+            <div class="max-w-4xl mx-auto">
+                <div id="cart-items" class="bg-indigo-50 p-8 rounded-2xl shadow-xl mb-6 space-y-4 border border-indigo-200">
+                    <p id="empty-cart-message" class="text-gray-600 text-center py-4">Your cart is empty. Add some amazing products!</p>
+                </div>
+                <div id="cart-summary" class="bg-indigo-50 p-8 rounded-2xl shadow-xl border border-indigo-200">
+                    <h3 class="text-2xl font-bold mb-4 text-indigo-700 border-b pb-2">Order Summary</h3>
+                    <div class="flex justify-between items-center mb-6 pt-4">
+                        <p class="text-xl font-bold text-gray-700">Total Amount:</p> 
+                        <span id="cart-total" class="font-extrabold text-3xl text-blue-700">0.00</span> 
+                        <span class="text-xl text-blue-700 font-bold">PKR</span>
+                    </div>
+                    
+                    <button id="checkout-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full w-full disabled:opacity-50 transition duration-150 shadow-xl" disabled>Login to Checkout</button>
+                </div>
+                <p id="checkout-message" class="text-lg mt-4 font-semibold text-center"></p>
+            </div>
+        </section>
+
+        <section id="orders-history-section" class="hidden">
+            <h2 class="text-4xl font-extrabold text-white mb-10 border-b-4 border-indigo-500 inline-block pb-1">MY ORDER HISTORY</h2>
+            <div id="orders-list" class="space-y-6 max-w-4xl mx-auto">
+                <p id="no-orders-message" class="hidden text-gray-600 text-center py-6 border rounded-xl bg-indigo-50 shadow-md">You have no previous orders yet. Start shopping now!</p>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="bg-indigo-900 text-white p-6 mt-10 shadow-lg">
+    <div class="max-w-7xl mx-auto text-center">
+        <p class="text-sm font-light mb-1">
+            &copy; <span id="currentYear"></span> LinkUp Store. All rights reserved.
+        </p>
+
+        <p class="text-xs text-indigo-200">
+            Built with <span class="font-semibold text-white">Node.js</span> and <span class="font-semibold text-white">Tailwind CSS</span>.
+        </p>
+    </div>
+</footer>
+
+<script>
+    // Current year update for footer
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+</script>
+
+<script>
+    const API_URL = 'http://localhost:3000';
+
+    let products = [];
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let isAuthenticated = false;
+    let currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+
+    const sections = {
+        auth: document.getElementById('auth-section'),
+        products: document.getElementById('products-section'),
+        cart: document.getElementById('cart-section'),
+        ordersHistory: document.getElementById('orders-history-section')
+    };
+    const domElements = {
+        productList: document.getElementById('product-list'),
+        cartCount: document.getElementById('cart-count'),
+        authBtn: document.getElementById('auth-btn'),
+        logoutBtn: document.getElementById('logout-btn'),
+        welcomeMsg: document.getElementById('welcome-message'),
+        usernameDisplay: document.getElementById('username-display'),
+        ordersBtn: document.getElementById('orders-btn'),
+        cartItems: document.getElementById('cart-items'),
+        cartTotal: document.getElementById('cart-total'),
+        checkoutBtn: document.getElementById('checkout-btn'),
+        checkoutMessage: document.getElementById('checkout-message'),
+        authForm: document.getElementById('auth-form'),
+        authTitle: document.getElementById('auth-title'),
+        toggleAuthBtn: document.getElementById('toggle-auth-btn'),
+        usernameGroup: document.getElementById('username-group'),
+        authSubmitBtn: document.getElementById('auth-submit-btn'),
+        authMessage: document.getElementById('auth-message'),
+        ordersList: document.getElementById('orders-list'),
+        noOrdersMessage: document.getElementById('no-orders-message')
+    };
+    
+    function setView(viewName) {
+        Object.values(sections).forEach(section => {
+            section.classList.add('hidden');
+        });
+        sections[viewName].classList.remove('hidden');
+
+        if (viewName === 'auth' || viewName === 'products') {
+            domElements.ordersBtn.classList.add('hidden');
+        } else if (isAuthenticated) {
+            domElements.ordersBtn.classList.remove('hidden');
+        }
+    }
+    
+    const formatPrice = (price) => {
+             const num = Number(price);
+             return isNaN(num) ? '0.00' : num.toFixed(2);
+    };
+
+    function updateAuthState(isLoggedIn = isAuthenticated) {
+        isAuthenticated = isLoggedIn;
+        if (isAuthenticated && currentUser) {
+            domElements.authBtn.classList.add('hidden');
+            domElements.logoutBtn.classList.remove('hidden');
+            domElements.welcomeMsg.classList.remove('hidden');
+            domElements.ordersBtn.classList.remove('hidden');
+            domElements.usernameDisplay.textContent = currentUser.username;
+        } else {
+            domElements.authBtn.classList.remove('hidden');
+            domElements.logoutBtn.classList.add('hidden');
+            domElements.welcomeMsg.classList.add('hidden');
+            domElements.ordersBtn.classList.add('hidden');
+            currentUser = null;
+            sessionStorage.removeItem('currentUser');
+        }
+        domElements.checkoutBtn.disabled = !isAuthenticated || cart.length === 0;
+        domElements.checkoutBtn.textContent = isAuthenticated ? 'Proceed to Checkout' : 'Login to Checkout';
+    }
+
+    function updateCartDisplay() {
+        domElements.cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCart();
+        updateAuthState();
+    }
+
+    function addToCart(productId) {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        const existingItem = cart.find(item => item.product_id === productId);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                product_id: productId,
+                name: product.name,
+                price: product.price,
+                quantity: 1
+            });
+        }
+        updateCartDisplay();
+    }
+
+    function removeFromCart(productId) {
+        const itemIndex = cart.findIndex(item => item.product_id === productId);
+        if (itemIndex > -1) {
+            if (cart[itemIndex].quantity > 1) {
+                cart[itemIndex].quantity -= 1;
+            } else {
+                cart.splice(itemIndex, 1);
+            }
+        }
+        updateCartDisplay();
+    }
+
+    async function fetchProducts() {
+        try {
+            const response = await fetch(`${API_URL}/products`);
+            if (!response.ok) throw new Error('Failed to fetch products'); 
+            
+            products = await response.json();
+            
+            if (products.length === 0) {
+                 domElements.productList.innerHTML = `<p class="text-white text-lg py-12 text-center col-span-full">Abhi koi Products maujood nahi hain. Database mein products add karein.</p>`;
+                 return;
+            }
+
+            renderProducts();
+        } catch (error) {
+            domElements.productList.innerHTML = `<p class="text-red-300 text-lg font-semibold py-12 text-center col-span-full">Error loading products: ${error.message}. Please check if server.js is running.</p>`;
+        }
+    }
+    
+    function renderProducts() {
+        domElements.productList.innerHTML = products.map((product, index) => {
+            const imageUrl = product.image_url 
+                ? product.image_url 
+                : `https://via.placeholder.com/400x300/CCCCCC/666666?text=NO+IMAGE`;
+
+            return `
+                <div class="card bg-indigo-50 p-6 rounded-2xl shadow-xl flex flex-col justify-between border border-indigo-200 transition-transform duration-300 animate-on-scroll" data-index="${index}">
+                    <div class="h-40 bg-gray-100 rounded-lg mb-4 overflow-hidden flex items-center justify-center">
+                        <img 
+                            src="${imageUrl}" 
+                            alt="${product.name}" 
+                            class="h-full w-full object-cover"
+                            loading="lazy" >
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-1 truncate">${product.name}</h3>
+                        <p class="text-gray-600 text-sm mb-3 line-clamp-2">${product.description || 'No description available.'}</p>
+                        <p class="text-3xl font-extrabold text-blue-700 mb-4">PKR ${formatPrice(product.price)}</p>
+                        <p class="text-base text-${product.stock > 10 ? 'gray-600' : 'red-600'} font-semibold mb-4">Stock: ${product.stock > 0 ? product.stock : 'Out of Stock'}</p>
+                    </div>
+                    <button onclick="addToCart(${product.id})" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-full shadow-md disabled:opacity-50 transition duration-150" ${product.stock <= 0 ? 'disabled' : ''}>
+                        Add to Cart
+                    </button>
+                </div>
+            `;
+        }).join('');
+        
+        setupScrollAnimation();
+    }
+
+
+    function renderCart() {
+        if (cart.length === 0) {
+            domElements.cartItems.innerHTML = '<p id="empty-cart-message" class="text-gray-600 text-center py-4">Your cart is empty. Add some amazing products!</p>';
+            domElements.cartTotal.textContent = '0.00';
+            domElements.checkoutBtn.disabled = true;
+            domElements.checkoutBtn.textContent = isAuthenticated ? 'Proceed to Checkout' : 'Login to Checkout';
+            return;
+        }
+        
+        let total = 0;
+        domElements.cartItems.innerHTML = cart.map(item => {
+            const subtotal = Number(item.price) * item.quantity;
+            total += subtotal;
+            return `
+                <div class="flex justify-between items-center py-4 border-b border-indigo-100 last:border-b-0">
+                    <div class="flex flex-col">
+                        <span class="font-semibold text-gray-800">${item.name}</span>
+                        <span class="text-sm text-gray-600">PKR ${formatPrice(item.price)} each</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-gray-700 font-medium">${item.quantity} units</span>
+                        <span class="text-lg font-bold text-indigo-700">PKR ${formatPrice(subtotal)}</span>
+                        <div>
+                            <button onclick="addToCart(${item.product_id})" class="text-blue-500 hover:text-blue-700 font-extrabold text-xl mx-1 p-1">+</button>
+                            <button onclick="removeFromCart(${item.product_id})" class="text-red-500 hover:text-red-700 font-extrabold text-xl mx-1 p-1">-</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        domElements.cartTotal.textContent = formatPrice(total);
+        domElements.checkoutBtn.disabled = !isAuthenticated;
+    }
+
+    async function renderOrdersHistory() {
+        if (!currentUser) return;
+
+        domElements.ordersList.innerHTML = `<p class="text-indigo-500 text-center py-6">Loading orders...</p>`;
+        domElements.noOrdersMessage.classList.add('hidden');
+        
+        try {
+            const response = await fetch(`${API_URL}/myorders/${currentUser.userId}`);
+            if (!response.ok) throw new Error('Failed to fetch orders');
+            
+            const orders = await response.json();
+            
+            if (orders.length === 0) {
+                domElements.ordersList.innerHTML = '';
+                domElements.noOrdersMessage.classList.remove('hidden');
+                return;
+            }
+
+            domElements.ordersList.innerHTML = orders.map(order => `
+                <div class="bg-indigo-50 p-8 rounded-2xl shadow-lg border-l-4 border-indigo-600">
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-indigo-100">
+                        <h3 class="text-2xl font-extrabold text-indigo-900">Order #${order.id}</h3>
+                        <p class="text-md font-semibold text-blue-600">Total: PKR ${formatPrice(order.total_amount)}</p>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Date: ${new Date(order.order_date).toLocaleDateString()} at ${new Date(order.order_date).toLocaleTimeString()}</p>
+                    <p class="font-bold text-gray-800 mb-2">Items Detail:</p>
+                    <ul class="space-y-2 pl-4">
+                        ${order.items.map(item => `
+                            <li class="text-gray-700 border-l-2 pl-2 border-indigo-200 flex justify-between">
+                                <span>${item.product_name} (<span class="font-medium">x${item.quantity}</span>)</span> 
+                                <span class="font-semibold">PKR ${formatPrice(item.price_at_order)}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            domElements.ordersList.innerHTML = `<p class="text-red-600 text-center py-6">Error loading orders history: ${error.message}</p>`;
+        }
+    }
+
+
+    function setupScrollAnimation() {
+        if (!('IntersectionObserver' in window)) {
+            document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                el.classList.add('in-view');
+            });
+            return;
+        }
+
+        const cards = document.querySelectorAll('.animate-on-scroll');
+        
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const card = entry.target;
+                    const index = card.dataset.index;
+                    
+                    card.style.transitionDelay = `${index * 100}ms`;
+                    
+                    card.classList.add('in-view');
+                    
+                    observer.unobserve(card);
+                }
+            });
+        }, {
+            rootMargin: '0px 0px -150px 0px',
+            threshold: 0.1
+        });
+
+        cards.forEach(card => {
+            observer.observe(card);
+        });
+    }
+
+
+    domElements.toggleAuthBtn.addEventListener('click', () => {
+        const isLogin = domElements.authTitle.textContent === 'USER LOGIN';
+        domElements.authTitle.textContent = isLogin ? 'USER REGISTER' : 'USER LOGIN';
+        domElements.authSubmitBtn.textContent = isLogin ? 'Register' : 'Login';
+        domElements.toggleAuthBtn.textContent = isLogin ? 'Already have an account? Login' : 'Need an account? Register';
+        if (isLogin) {
+            domElements.usernameGroup.classList.remove('hidden');
+        } else {
+            domElements.usernameGroup.classList.add('hidden');
+        }
+        domElements.authMessage.textContent = '';
+    });
+
+    domElements.authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const isRegister = domElements.authTitle.textContent === 'USER REGISTER';
+        const endpoint = isRegister ? 'register' : 'login';
+
+        const username = document.getElementById('auth-username').value;
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+
+        let body = { email, password };
+        if (isRegister) {
+            body.username = username;
+        }
+
+        domElements.authMessage.className = 'text-indigo-500 text-sm mt-4 font-medium text-center';
+        domElements.authMessage.textContent = 'Processing...';
+
+        try {
+            const response = await fetch(`${API_URL}/${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                domElements.authMessage.className = 'text-blue-600 text-sm mt-4 font-medium text-center';
+                domElements.authMessage.textContent = `Success: ${data.message}`;
+                if (!isRegister) {
+                    currentUser = { userId: data.userId, username: data.username };
+                    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    updateAuthState(true);
+                    setView('products');
+                } else {
+                    document.getElementById('toggle-auth-btn').click(); 
+                    document.getElementById('auth-email').value = email;
+                    document.getElementById('auth-password').value = '';
+                }
+            } else {
+                domElements.authMessage.className = 'text-red-600 text-sm mt-4 font-medium text-center';
+                domElements.authMessage.textContent = `Error: ${data.error || 'Failed to connect.'}`;
+            }
+        } catch (error) {
+            domElements.authMessage.className = 'text-red-600 text-sm mt-4 font-medium text-center';
+            domElements.authMessage.textContent = `Network Error: Server is unreachable or CORS issue.`;
+        }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        sessionStorage.removeItem('currentUser');
+        isAuthenticated = false;
+        currentUser = null;
+        updateAuthState(false);
+        setView('products'); 
+    });
+
+    domElements.checkoutBtn.addEventListener('click', async () => {
+        if (!isAuthenticated || cart.length === 0) return;
+        
+        domElements.checkoutMessage.className = 'text-indigo-500 text-lg mt-4 font-semibold text-center';
+        domElements.checkoutMessage.textContent = 'Placing your order... Please wait.';
+
+        const orderBody = {
+            user_id: currentUser.userId,
+            items: cart.map(item => ({
+                product_id: item.product_id,
+                quantity: item.quantity,
+                price: item.price
+            }))
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderBody)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                domElements.checkoutMessage.className = 'text-blue-600 text-lg mt-4 font-bold text-center';
+                domElements.checkoutMessage.textContent = `Order Placed Successfully! Order ID: ${data.orderId}.`;
+                
+                cart = [];
+                updateCartDisplay();
+                fetchProducts(); // Refresh product list to show updated stock
+            } else {
+                domElements.checkoutMessage.className = 'text-red-600 text-lg mt-4 font-bold text-center';
+                domElements.checkoutMessage.textContent = `Order Failed: ${data.error || 'Check server logs for details.'}`;
+            }
+        } catch (error) {
+            domElements.checkoutMessage.className = 'text-red-600 text-lg mt-4 font-bold text-center';
+            domElements.checkoutMessage.textContent = `Network Error: Could not reach the server to place order.`;
+        }
+    });
+
+
+    document.getElementById('products-btn').addEventListener('click', () => {
+        setView('products');
+        domElements.checkoutMessage.textContent = '';
+    });
+    document.getElementById('cart-btn').addEventListener('click', () => {
+        setView('cart');
+        domElements.checkoutMessage.textContent = '';
+    });
+    document.getElementById('auth-btn').addEventListener('click', () => {
+        setView('auth');
+        domElements.authMessage.textContent = '';
+    });
+    document.getElementById('orders-btn').addEventListener('click', () => {
+        setView('ordersHistory');
+        renderOrdersHistory();
+    });
+
+
+    function init() {
+        updateAuthState(!!currentUser);
+        updateCartDisplay();
+        fetchProducts();
+        setView('products');
+    }
+
+    init();
+</script>
+</body>
+</html>
